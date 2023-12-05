@@ -8,7 +8,7 @@ videos/
 checkpoints/
 data/
 model.zip
-model/
+model/*.pth
 exp*/
 cliport_quickstart/
 SR_GRM/

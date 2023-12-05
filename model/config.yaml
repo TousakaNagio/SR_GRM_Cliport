@@ -1,0 +1,21 @@
+model:
+  max_txt_len: 32
+  max_output_txt_len: 32
+custom:
+  embed_dim: 256
+  model_path: '/home/shinji106/ntu/cliport/model/instruct_blip_flanxl_trimmed.pth'
+  image_height: 160
+  image_width: 320
+preprocess:
+  vis_processor:
+    train:
+      name: "blip_image_train"
+      image_size: 224
+    eval:
+      name: "blip_image_eval"
+      image_size: 224
+  text_processor:
+    train:
+      name: "blip_question"
+    eval:
+      name: "blip_question"
