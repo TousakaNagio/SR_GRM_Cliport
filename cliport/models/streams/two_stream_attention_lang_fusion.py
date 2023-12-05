@@ -5,6 +5,9 @@ import torch.nn.functional as F
 from cliport.models.core.attention import Attention
 import cliport.models as models
 import cliport.models.core.fusion as fusion
+from model.ravenblip2 import RavenBlip2
+
+import torchvision
 
 
 class TwoStreamAttentionLangFusion(Attention):
@@ -79,4 +82,36 @@ class TwoStreamAttentionLangFusionLat(TwoStreamAttentionLangFusion):
         x1, lat = self.attn_stream_one(x)
         x2 = self.attn_stream_two(x, lat, l)
         x = self.fusion(x1, x2)
-        return x
+        # print('========', x.shape)
+        return x # check here
+    
+class cjjattention(TwoStreamAttentionLangFusion):
+    def __init__(self, stream_fcn, in_shape, n_rotations, preprocess, cfg, device):
+        self.fusion_type = cfg['train']['attn_stream_fusion_type']
+        super().__init__(stream_fcn, in_shape, n_rotations, preprocess, cfg, device)
+        
+        # cjj
+        self.conv = torch.nn.Conv2d(32, 1, 1)
+        self.blip2 = RavenBlip2(config_path='/home/shinji106/ntu/cliport/model/config.yaml')
+        
+        self.transform = torchvision.transforms.ToPILImage()
+
+    def attend(self, in_tensor, l):
+        
+        # cjj
+        if len(in_tensor.shape) == 4:
+            in_tensor = in_tensor.squeeze(0)
+        batch = {
+            "init_image": [self.transform(in_tensor[:3, :, :])],
+            "instruction": [l],
+        }
+        logits = self.blip2(batch)
+        # logits = torch.nn.functional.pad(logits, (self.pad_size, self.pad_size, self.pad_size, self.pad_size), mode='reflect')
+        logits = self.conv(logits) # (1, 3, 384, 224)
+        # breakpoint()
+        
+        # x1, lat = self.attn_stream_one(x)
+        # x2 = self.attn_stream_two(x, lat, l)
+        # x = self.fusion(x1, x2)
+        # print(logits.shape)
+        return logits # (1, 1, 320, 160)

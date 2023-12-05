@@ -19,6 +19,8 @@ class TransporterAgent(LightningModule):
     def __init__(self, name, cfg, train_ds, test_ds):
         super().__init__()
         utils.set_seed(0)
+        
+        self.automatic_optimization = False
 
         self.device_type = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # this is bad for PL :(
         self.name = name
@@ -97,7 +99,8 @@ class TransporterAgent(LightningModule):
         # Backpropagate.
         if backprop:
             attn_optim = self._optimizers['attn']
-            self.manual_backward(loss, attn_optim)
+            # self.manual_backward(loss, attn_optim)
+            self.manual_backward(loss)
             attn_optim.step()
             attn_optim.zero_grad()
 
@@ -152,7 +155,8 @@ class TransporterAgent(LightningModule):
         loss = self.cross_entropy_with_logits(output, label)
         if backprop:
             transport_optim = self._optimizers['trans']
-            self.manual_backward(loss, transport_optim)
+            # self.manual_backward(loss, transport_optim)
+            self.manual_backward(loss)
             transport_optim.step()
             transport_optim.zero_grad()
  
@@ -193,7 +197,7 @@ class TransporterAgent(LightningModule):
         self.log('tr/loss', total_loss)
         self.total_steps = step
 
-        self.trainer.train_loop.running_loss.append(total_loss)
+        # self.trainer.train_loop.running_loss.append(total_loss)
 
         self.check_save_iteration()
 
@@ -242,7 +246,7 @@ class TransporterAgent(LightningModule):
         loss1 /= self.val_repeats
         val_total_loss = loss0 + loss1
 
-        self.trainer.evaluation_loop.trainer.train_loop.running_loss.append(val_total_loss)
+        # self.trainer._evaluation_loop.trainer.train_loop.running_loss.append(val_total_loss)
 
         return dict(
             val_loss=val_total_loss,
@@ -254,39 +258,39 @@ class TransporterAgent(LightningModule):
             val_trans_theta_err=err1['theta'],
         )
 
-    def training_epoch_end(self, all_outputs):
-        super().training_epoch_end(all_outputs)
-        utils.set_seed(self.trainer.current_epoch+1)
+    # def on_training_epoch_end(self, all_outputs):
+    #     super().training_epoch_end(all_outputs)
+    #     utils.set_seed(self.trainer.current_epoch+1)
 
-    def validation_epoch_end(self, all_outputs):
-        mean_val_total_loss = np.mean([v['val_loss'].item() for v in all_outputs])
-        mean_val_loss0 = np.mean([v['val_loss0'].item() for v in all_outputs])
-        mean_val_loss1 = np.mean([v['val_loss1'].item() for v in all_outputs])
-        total_attn_dist_err = np.sum([v['val_attn_dist_err'] for v in all_outputs])
-        total_attn_theta_err = np.sum([v['val_attn_theta_err'] for v in all_outputs])
-        total_trans_dist_err = np.sum([v['val_trans_dist_err'] for v in all_outputs])
-        total_trans_theta_err = np.sum([v['val_trans_theta_err'] for v in all_outputs])
+    # def on_validation_epoch_end(self, all_outputs):
+    #     mean_val_total_loss = np.mean([v['val_loss'].item() for v in all_outputs])
+    #     mean_val_loss0 = np.mean([v['val_loss0'].item() for v in all_outputs])
+    #     mean_val_loss1 = np.mean([v['val_loss1'].item() for v in all_outputs])
+    #     total_attn_dist_err = np.sum([v['val_attn_dist_err'] for v in all_outputs])
+    #     total_attn_theta_err = np.sum([v['val_attn_theta_err'] for v in all_outputs])
+    #     total_trans_dist_err = np.sum([v['val_trans_dist_err'] for v in all_outputs])
+    #     total_trans_theta_err = np.sum([v['val_trans_theta_err'] for v in all_outputs])
 
-        self.log('vl/attn/loss', mean_val_loss0)
-        self.log('vl/trans/loss', mean_val_loss1)
-        self.log('vl/loss', mean_val_total_loss)
-        self.log('vl/total_attn_dist_err', total_attn_dist_err)
-        self.log('vl/total_attn_theta_err', total_attn_theta_err)
-        self.log('vl/total_trans_dist_err', total_trans_dist_err)
-        self.log('vl/total_trans_theta_err', total_trans_theta_err)
+    #     self.log('vl/attn/loss', mean_val_loss0)
+    #     self.log('vl/trans/loss', mean_val_loss1)
+    #     self.log('vl/loss', mean_val_total_loss)
+    #     self.log('vl/total_attn_dist_err', total_attn_dist_err)
+    #     self.log('vl/total_attn_theta_err', total_attn_theta_err)
+    #     self.log('vl/total_trans_dist_err', total_trans_dist_err)
+    #     self.log('vl/total_trans_theta_err', total_trans_theta_err)
 
-        print("\nAttn Err - Dist: {:.2f}, Theta: {:.2f}".format(total_attn_dist_err, total_attn_theta_err))
-        print("Transport Err - Dist: {:.2f}, Theta: {:.2f}".format(total_trans_dist_err, total_trans_theta_err))
+    #     print("\nAttn Err - Dist: {:.2f}, Theta: {:.2f}".format(total_attn_dist_err, total_attn_theta_err))
+    #     print("Transport Err - Dist: {:.2f}, Theta: {:.2f}".format(total_trans_dist_err, total_trans_theta_err))
 
-        return dict(
-            val_loss=mean_val_total_loss,
-            val_loss0=mean_val_loss0,
-            mean_val_loss1=mean_val_loss1,
-            total_attn_dist_err=total_attn_dist_err,
-            total_attn_theta_err=total_attn_theta_err,
-            total_trans_dist_err=total_trans_dist_err,
-            total_trans_theta_err=total_trans_theta_err,
-        )
+    #     return dict(
+    #         val_loss=mean_val_total_loss,
+    #         val_loss0=mean_val_loss0,
+    #         mean_val_loss1=mean_val_loss1,
+    #         total_attn_dist_err=total_attn_dist_err,
+    #         total_attn_theta_err=total_attn_theta_err,
+    #         total_trans_dist_err=total_trans_dist_err,
+    #         total_trans_theta_err=total_trans_theta_err,
+    #     )
 
     def act(self, obs, info=None, goal=None):  # pylint: disable=unused-argument
         """Run inference and return best action given visual observations."""
@@ -326,8 +330,8 @@ class TransporterAgent(LightningModule):
             'place': p1_pix,
         }
 
-    def optimizer_step(self, current_epoch, batch_nb, optimizer, optimizer_i, second_order_closure, on_tpu, using_native_amp, using_lbfgs):
-        pass
+    # def optimizer_step(self, current_epoch, batch_nb, optimizer, optimizer_i, second_order_closure, on_tpu, using_native_amp, using_lbfgs):
+    #     pass
 
     def configure_optimizers(self):
         pass

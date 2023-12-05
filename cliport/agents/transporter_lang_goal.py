@@ -7,8 +7,8 @@ from cliport.models.streams.one_stream_attention_lang_fusion import OneStreamAtt
 from cliport.models.streams.one_stream_transport_lang_fusion import OneStreamTransportLangFusion
 from cliport.models.streams.two_stream_attention_lang_fusion import TwoStreamAttentionLangFusion
 from cliport.models.streams.two_stream_transport_lang_fusion import TwoStreamTransportLangFusion
-from cliport.models.streams.two_stream_attention_lang_fusion import TwoStreamAttentionLangFusionLat
-from cliport.models.streams.two_stream_transport_lang_fusion import TwoStreamTransportLangFusionLat
+from cliport.models.streams.two_stream_attention_lang_fusion import TwoStreamAttentionLangFusionLat, cjjattention
+from cliport.models.streams.two_stream_transport_lang_fusion import TwoStreamTransportLangFusionLat, cjjtransporter
 
 
 class TwoStreamClipLingUNetTransporterAgent(TransporterAgent):
@@ -136,6 +136,49 @@ class TwoStreamClipFilmLingUNetLatTransporterAgent(TwoStreamClipLingUNetTranspor
             device=self.device_type,
         )
 
+# Here
+class cjjagent(TwoStreamClipLingUNetTransporterAgent):
+    def __init__(self, name, cfg, train_ds, test_ds):
+        super().__init__(name, cfg, train_ds, test_ds)
+
+    def _build_model(self):
+        stream_one_fcn = 'plain_resnet_lat'
+        stream_two_fcn = 'clip_lingunet_lat'
+        # self.attention = TwoStreamAttentionLangFusionLat(
+        #     stream_fcn=(stream_one_fcn, stream_two_fcn),
+        #     in_shape=self.in_shape,
+        #     n_rotations=1,
+        #     preprocess=utils.preprocess,
+        #     cfg=self.cfg,
+        #     device=self.device_type,
+        # )
+        self.attention = cjjattention(
+            stream_fcn=(stream_one_fcn, stream_two_fcn),
+            in_shape=self.in_shape,
+            n_rotations=1,
+            preprocess=utils.preprocess,
+            cfg=self.cfg,
+            device=self.device_type,
+        )
+            
+        # self.transport = cjjtransporter(
+        #     stream_fcn=(stream_one_fcn, stream_two_fcn),
+        #     in_shape=self.in_shape,
+        #     n_rotations=self.n_rotations,
+        #     crop_size=self.crop_size,
+        #     preprocess=utils.preprocess,
+        #     cfg=self.cfg,
+        #     device=self.device_type,
+        # )
+        self.transport = TwoStreamTransportLangFusionLat(
+            stream_fcn=(stream_one_fcn, stream_two_fcn),
+            in_shape=self.in_shape,
+            n_rotations=self.n_rotations,
+            crop_size=self.crop_size,
+            preprocess=utils.preprocess,
+            cfg=self.cfg,
+            device=self.device_type,
+        )
 
 class TwoStreamClipLingUNetLatTransporterAgent(TwoStreamClipLingUNetTransporterAgent):
     def __init__(self, name, cfg, train_ds, test_ds):
@@ -161,7 +204,6 @@ class TwoStreamClipLingUNetLatTransporterAgent(TwoStreamClipLingUNetTransporterA
             cfg=self.cfg,
             device=self.device_type,
         )
-
 
 class TwoStreamRN50BertLingUNetTransporterAgent(TwoStreamClipLingUNetTransporterAgent):
     def __init__(self, name, cfg, train_ds, test_ds):

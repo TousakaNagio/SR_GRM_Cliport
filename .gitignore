@@ -6,6 +6,14 @@ cliport/jobs/
 jobs/
 videos/
 checkpoints/
+data/
+model.zip
+model/
+exp*/
+cliport_quickstart/
+SR_GRM/
+
+
 
 # Large Asserts
 cliport/environments/assets/google/
