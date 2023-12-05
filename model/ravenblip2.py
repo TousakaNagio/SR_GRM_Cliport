@@ -1,6 +1,7 @@
 # from src.models.base import BaseModel
 # from lavis.models.blip2_models.blip2_t5_instruct import Blip2T5Instruct
 from model.ravenblip import RavenBlip2T5Instruct
+from model.ravenqformer import RavenQformer
 from lavis.models import load_preprocess
 import torch
 from omegaconf import OmegaConf
@@ -38,7 +39,7 @@ class RavenBlip2(BaseModel):
     def __init__(self, config_path):
         super().__init__()
         model_default_config = OmegaConf.load(config_path)
-        self.model = RavenBlip2T5Instruct(model_default_config)
+        self.model = RavenQformer(model_default_config)
 
         self.vis_processors, self.text_processors = load_preprocess(
             model_default_config.preprocess
@@ -80,6 +81,10 @@ class RavenBlip2(BaseModel):
         return optim_params
 
     def parse_images(self, images):
+        # If images is tensor, then it is already processed
+        # if isinstance(images[0], torch.Tensor):
+        #     images = torch.stack(images, dim=0).to(self.device)
+        #     return images
         if not isinstance(images, list):
             images = [images]
         # try:
@@ -97,9 +102,15 @@ class RavenBlip2(BaseModel):
 
     # TODO: move this procedure to dataset
     def forward(self, batch):
+        # if isinstance(batch["init_image"][0], torch.Tensor):
+        #     images = batch["init_image"]
+        #     print(type(images), len(images), images[0].shape)
+        # else:
+        #     images = self.parse_images(batch["init_image"])
         images = self.parse_images(batch["init_image"])
         # final_images = self.parse_images(batch["final_image"])
         instruction = self.parse_questions(batch["instruction"])
+        
         samples = {
             "init_image": images,
             "text_input": instruction,

@@ -1,11 +1,12 @@
 model:
   max_txt_len: 32
-  max_output_txt_len: 32
+  # max_output_txt_len: 32
 custom:
   embed_dim: 256
   model_path: '/home/shinji106/ntu/cliport/model/instruct_blip_flanxl_trimmed.pth'
   image_height: 160
   image_width: 320
+  img_size: 224
 preprocess:
   vis_processor:
     train:

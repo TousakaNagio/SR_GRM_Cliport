@@ -105,6 +105,10 @@ class cjjattention(TwoStreamAttentionLangFusion):
             "init_image": [self.transform(in_tensor[:3, :, :])],
             "instruction": [l],
         }
+        # batch = {
+        #     "init_image": [in_tensor[:3, :, :]],
+        #     "instruction": [l],
+        # }
         logits = self.blip2(batch)
         # logits = torch.nn.functional.pad(logits, (self.pad_size, self.pad_size, self.pad_size, self.pad_size), mode='reflect')
         logits = self.conv(logits) # (1, 3, 384, 224)

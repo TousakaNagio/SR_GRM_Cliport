@@ -29,6 +29,7 @@ def main(cfg):
         save_top_k=1,
         save_last=True,
     )
+    # checkpoint_callback.best
 
     # Trainer
     max_epochs = cfg['train']['n_steps'] // cfg['train']['n_demos']
