@@ -27,6 +27,8 @@ class TransporterAgent(LightningModule):
         self.cfg = cfg
         self.train_ds = train_ds
         self.test_ds = test_ds
+        
+        self._global_step = 0
 
         self.name = name
         self.task = cfg['train']['task']
@@ -181,6 +183,8 @@ class TransporterAgent(LightningModule):
     def training_step(self, batch, batch_idx):
         self.attention.train()
         self.transport.train()
+        
+        self._global_step += 1
 
         frame, _ = batch
 
@@ -206,7 +210,7 @@ class TransporterAgent(LightningModule):
         )
 
     def check_save_iteration(self):
-        global_step = self.trainer.global_step
+        global_step = self._global_step
         if (global_step + 1) in self.save_steps:
             self.trainer.run_evaluation()
             val_loss = self.trainer.callback_metrics['val_loss']

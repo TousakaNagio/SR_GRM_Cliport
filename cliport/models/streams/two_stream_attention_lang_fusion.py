@@ -59,9 +59,9 @@ class TwoStreamAttentionLangFusion(Attention):
         # Rotate back output.
         logits = self.rotator(logits, reverse=True, pivot=pv)
         logits = torch.cat(logits, dim=0)
-        c0 = self.padding[:2, 0]
-        c1 = c0 + inp_img.shape[:2]
-        logits = logits[:, :, c0[0]:c1[0], c0[1]:c1[1]]
+        # c0 = self.padding[:2, 0]
+        # c1 = c0 + inp_img.shape[:2]
+        # logits = logits[:, :, c0[0]:c1[0], c0[1]:c1[1]]
 
         logits = logits.permute(1, 2, 3, 0)  # [B W H 1]
         output = logits.reshape(1, np.prod(logits.shape))

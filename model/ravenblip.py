@@ -22,7 +22,7 @@ class RavenBlip2T5Instruct(Blip2T5Instruct):
         self.sim_loss = nn.CosineEmbeddingLoss()
         self.embed_dim = config.custom.embed_dim
         self.sim_head = nn.Linear(self.Qformer.config.hidden_size, self.embed_dim)
-        self.affordance_head = nn.Linear(self.Qformer.config.hidden_size, self.img_h * self.img_w * 2)
+        self.affordance_head = nn.Linear(self.Qformer.config.hidden_size, self.img_h * self.img_w)
     
     def forward(self, samples):
         # print('-----------------')
@@ -72,7 +72,7 @@ class RavenBlip2T5Instruct(Blip2T5Instruct):
             self.affordance_head(query_output.last_hidden_state[:, : query_tokens.size(1), :]), dim=-1
         )
         logit = image_feats # [4, 32, 51200]
-        return logit.reshape((logit.size(0), logit.size(1), -1, self.img_w))
+        return logit.reshape((logit.size(0), logit.size(1), -1, self.img_h))
 
     # @torch.no_grad()
     # def generate(
