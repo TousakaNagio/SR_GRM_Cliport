@@ -7,5 +7,5 @@ python cliport/train.py train.task=packing-shapes \
                         train.lang_fusion_type=mult \
                         train.n_demos=1000 \
                         train.n_steps=201000 \
-                        train.exp_folder=exps_cjj_0 \
+                        train.exp_folder=exps_cjj_1 \
                         dataset.cache=False 

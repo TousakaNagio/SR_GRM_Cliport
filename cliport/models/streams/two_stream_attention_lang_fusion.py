@@ -59,9 +59,9 @@ class TwoStreamAttentionLangFusion(Attention):
         # Rotate back output.
         logits = self.rotator(logits, reverse=True, pivot=pv)
         logits = torch.cat(logits, dim=0)
-        # c0 = self.padding[:2, 0]
-        # c1 = c0 + inp_img.shape[:2]
-        # logits = logits[:, :, c0[0]:c1[0], c0[1]:c1[1]]
+        c0 = self.padding[:2, 0]
+        c1 = c0 + inp_img.shape[:2]
+        logits = logits[:, :, c0[0]:c1[0], c0[1]:c1[1]]
 
         logits = logits.permute(1, 2, 3, 0)  # [B W H 1]
         output = logits.reshape(1, np.prod(logits.shape))
@@ -104,6 +104,7 @@ class cjjattention(TwoStreamAttentionLangFusion):
         batch = {
             "init_image": [self.transform(in_tensor[:3, :, :])],
             "instruction": [l],
+            "is_attn": True
         }
         # batch = {
         #     "init_image": [in_tensor[:3, :, :]],
@@ -111,11 +112,11 @@ class cjjattention(TwoStreamAttentionLangFusion):
         # }
         logits = self.blip2(batch)
         # logits = torch.nn.functional.pad(logits, (self.pad_size, self.pad_size, self.pad_size, self.pad_size), mode='reflect')
-        logits = self.conv(logits) # (1, 3, 384, 224)
+        logits = self.conv(logits)
         # breakpoint()
         
         # x1, lat = self.attn_stream_one(x)
         # x2 = self.attn_stream_two(x, lat, l)
         # x = self.fusion(x1, x2)
         # print(logits.shape)
-        return logits # (1, 1, 320, 160)
+        return logits

@@ -26,6 +26,7 @@ class RavenQformer(Blip2Qformer):
         self.embed_dim = config.custom.embed_dim
         self.sim_head = nn.Linear(self.Qformer.config.hidden_size, self.embed_dim)
         self.affordance_head = nn.Linear(self.Qformer.config.hidden_size, self.img_h * self.img_w)
+        self.affordance_head_attn = nn.Linear(self.Qformer.config.hidden_size, self.img_h * self.img_w * 2)
     
     def forward(self, samples):
         # print('-----------------')
@@ -52,9 +53,9 @@ class RavenQformer(Blip2Qformer):
             return_dict=True,
         )
 
-        image_feats = F.normalize(
-            self.vision_proj(query_output.last_hidden_state), dim=-1
-        )
+        # image_feats = F.normalize(
+        #     self.vision_proj(query_output.last_hidden_state), dim=-1
+        # )
 
         text_tokens = self.tokenizer(
             text,
@@ -86,10 +87,15 @@ class RavenQformer(Blip2Qformer):
             encoder_attention_mask=image_atts,
             return_dict=True,
         )
-        image_feats = F.normalize(
-            self.affordance_head(query_output.last_hidden_state[:, : query_tokens.size(1), :]), dim=-1
-        )
+        if samples["is_attn"]:
+            image_feats = F.normalize(
+                self.affordance_head_attn(query_output.last_hidden_state[:, : query_tokens.size(1), :]), dim=-1
+            )
+        else:
+            image_feats = F.normalize(
+                self.affordance_head(query_output.last_hidden_state[:, : query_tokens.size(1), :]), dim=-1
+            )
         logit = image_feats # [4, 32, 51200]
-        return logit.reshape((logit.size(0), logit.size(1), -1, self.img_h))
+        return logit.reshape((logit.size(0), logit.size(1), -1, self.img_w))
         
         

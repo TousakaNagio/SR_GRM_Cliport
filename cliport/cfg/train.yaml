@@ -40,7 +40,7 @@ train:
   log: False # log metrics and stats to wandb
   n_val: 100
   val_repeats: 1
-  save_steps: [1000, 25000, 50000, 100000, 150000, 200000]
+  save_steps: [1000, 5000, 10000, 25000, 50000, 100000, 150000, 200000]
   load_from_last_ckpt: True
 
 wandb:

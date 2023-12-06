@@ -112,13 +112,13 @@ hydra:
     - mode=test
     - n_demos=100
     - train_demos=1000
-    - exp_folder=exps_ours
-    - checkpoint_type=test_best
+    - exp_folder=exps_cjj_1
     - update_results=True
     - disp=False
+    - model_path=/home/shinji106/ntu/cliport/exps_cjj_1/packing-shapes-ours-n1000-train/checkpoints/
   job:
     name: eval
-    override_dirname: agent=ours,checkpoint_type=test_best,disp=False,eval_task=packing-shapes,exp_folder=exps_ours,mode=test,model_task=packing-shapes,n_demos=100,train_demos=1000,update_results=True
+    override_dirname: agent=ours,disp=False,eval_task=packing-shapes,exp_folder=exps_cjj_1,mode=test,model_path=/home/shinji106/ntu/cliport/exps_cjj_1/packing-shapes-ours-n1000-train/checkpoints/,model_task=packing-shapes,n_demos=100,train_demos=1000,update_results=True
     id: ???
     num: ???
     config_name: eval
@@ -131,5 +131,5 @@ hydra:
         exclude_keys: []
   runtime:
     version: 1.0.5
-    cwd: /mnt/sdb/timothy/Desktop/2023Fall/cliport
+    cwd: /home/shinji106/ntu/cliport
   verbose: false

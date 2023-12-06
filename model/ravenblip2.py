@@ -114,6 +114,7 @@ class RavenBlip2(BaseModel):
         samples = {
             "init_image": images,
             "text_input": instruction,
+            "is_attn": batch["is_attn"]
         }
 
         if "n_answers" in batch:

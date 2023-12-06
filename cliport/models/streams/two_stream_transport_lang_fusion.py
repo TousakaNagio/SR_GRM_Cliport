@@ -112,7 +112,7 @@ class cjjtransporter(TwoStreamTransportLangFusion):
 
         # cjj
         self.conv = torch.nn.Conv2d(32, 3, 1)
-        self.blip2 = RavenBlip2(config_path='/mnt/sdb/timothy/Desktop/2023Fall/cliport/model/config.yaml')
+        self.blip2 = RavenBlip2(config_path='/home/shinji106/ntu/cliport/model/config.yaml')
         # very ugly
         self.transform = torchvision.transforms.ToPILImage()
 
@@ -124,12 +124,14 @@ class cjjtransporter(TwoStreamTransportLangFusion):
         # logits = self.fusion_key(key_out_one, key_out_two)
         
         # cjj
-        if len(in_tensor.shape) == 4:
+        if len(in_tensor.shape) == 4: # (1, 6, 384, 224)
             in_tensor = in_tensor.squeeze(0)
         batch = {
             "init_image": [self.transform(in_tensor[:3, :, :])],
             "instruction": [l],
+            "is_attn": False
         }
+        
         logits = self.blip2(batch)
         logits = torch.nn.functional.pad(logits, (self.pad_size, self.pad_size, self.pad_size, self.pad_size), mode='reflect')
         logits = self.conv(logits) # (1, 3, 384, 224)
